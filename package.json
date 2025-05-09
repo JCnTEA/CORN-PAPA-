@@ -1,5 +1,6 @@
+
 {
-  "name": "tesla-charge-display",
+  "name": "tesla-charge-qr-full",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -10,6 +11,7 @@
   "dependencies": {
     "next": "13.4.19",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "qrcode.react": "^1.0.0"
   }
 }

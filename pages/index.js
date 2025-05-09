@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export default function Page() {
   const [data, setData] = useState(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [countdown, setCountdown] = useState(60);
 
   useEffect(() => {
     const token = localStorage.getItem('tesla_token');
@@ -21,8 +22,21 @@ export default function Page() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    const dataInterval = setInterval(fetchData, 10000);
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          window.location.href = '/';
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(countdownInterval);
+    };
   }, [isAuthorized]);
 
   const handleTokenSubmit = (event) => {
@@ -40,10 +54,22 @@ export default function Page() {
         <h2>如何取得 Tesla API Token</h2>
         <ol style={{ textAlign: 'left', display: 'inline-block', textAlign: 'left', marginBottom: '20px' }}>
           <li>1. 前往 <a href="https://www.teslafi.com/signup.php" target="_blank" rel="noopener noreferrer">TeslaFi</a> 註冊並登入 Tesla 帳號。</li>
-          <li>2. 登入後進入 TeslaFi 帳戶設定頁，找到 Tesla API Token。</li>
-          <li>3. 複製你的 Tesla API Token。</li>
-          <li>4. 回到本頁貼上 Token 並點擊確認授權。</li>
+          <li>2. 登入後進入 "Account -> Tesla API Token" 頁面。</li>
+          <li>3. 參考以下圖示：[插入 TeslaFi 介面截圖位置說明]</li>
+          <li>4. 複製顯示的 Access Token 並貼上至授權欄位。</li>
         </ol>
+        <p>API 端點：/api/tesla/charge-state-latest<br />
+        請求方法：GET<br />
+        回應格式：<br />
+        {'{'}<br />
+        &nbsp;&nbsp;"vehicle_name": "Model 3",<br />
+        &nbsp;&nbsp;"plate": "黑牌 8888",<br />
+        &nbsp;&nbsp;"battery_level": 76,<br />
+        &nbsp;&nbsp;"battery_range": 356.2,<br />
+        &nbsp;&nbsp;"charging_state": "Charging",<br />
+        &nbsp;&nbsp;"charger_power": 7<br />
+        {'}'}
+        </p>
         <form onSubmit={handleTokenSubmit}>
           <input
             type="text"
@@ -104,6 +130,9 @@ export default function Page() {
       </h2>
       <p style={{ marginTop: '10px', fontSize: '0.9em', color: 'gray' }}>
         實時監控中，最近更新時間：{new Date().toLocaleTimeString()}
+      </p>
+      <p style={{ marginTop: '10px', fontSize: '0.9em', color: 'red' }}>
+        {countdown} 秒後自動返回首頁
       </p>
     </div>
   );

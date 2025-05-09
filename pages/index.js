@@ -37,7 +37,13 @@ export default function Page() {
   if (!isAuthorized) {
     return (
       <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h2>請輸入 Tesla API Token 以授權展示</h2>
+        <h2>如何取得 Tesla API Token</h2>
+        <ol style={{ textAlign: 'left', display: 'inline-block', textAlign: 'left', marginBottom: '20px' }}>
+          <li>1. 前往 <a href="https://www.teslafi.com/signup.php" target="_blank" rel="noopener noreferrer">TeslaFi</a> 註冊並登入 Tesla 帳號。</li>
+          <li>2. 登入後進入 TeslaFi 帳戶設定頁，找到 Tesla API Token。</li>
+          <li>3. 複製你的 Tesla API Token。</li>
+          <li>4. 回到本頁貼上 Token 並點擊確認授權。</li>
+        </ol>
         <form onSubmit={handleTokenSubmit}>
           <input
             type="text"

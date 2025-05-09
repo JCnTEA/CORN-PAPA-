@@ -1,22 +1,36 @@
 import { useState, useEffect } from 'react';
 
 const vehicles = [
-  { id: 1, name: 'Model 3' },
-  { id: 2, name: 'Model Y' }
+  { id: 1, name: 'Model 3', plate: '黑牌 8888' },
+  { id: 2, name: 'Model Y', plate: '白牌 9999' },
+  { id: 3, name: 'Model X', plate: '藍牌 1234' },
+  { id: 4, name: 'Model S', plate: '紅牌 5678' }
 ];
 
 export default function Home() {
-  const [data, setData] = useState({
-    battery_level: 0,
-    battery_range: 0,
-    charging_state: 'Disconnected',
-    charger_power: 0,
-  });
+  const [data, setData] = useState(null);
   const [currentVehicleIndex, setCurrentVehicleIndex] = useState(0);
+  const [token, setToken] = useState(null);
+
+  const handleLogin = () => {
+    window.location.href = `https://auth.tesla.com/oauth2/v3/authorize?client_id=ownerapi&response_type=token&redirect_uri=${encodeURIComponent(window.location.href)}&scope=openid+email+offline_access+vehicle_read+vehicle_control`;
+  };
 
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+    const accessToken = hashParams.get('access_token');
+    if (accessToken) {
+      setToken(accessToken);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
     const fetchData = async () => {
-      const response = await fetch('/api/tesla/charge-state');
+      const response = await fetch('/api/tesla/charge-state', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const result = await response.json();
       setData(result);
     };
@@ -31,7 +45,20 @@ export default function Home() {
       clearInterval(interval);
       clearInterval(switchInterval);
     };
-  }, []);
+  }, [token]);
+
+  if (!token) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <h2>請先登入 Tesla 帳號以授權存取車輛資訊</h2>
+        <button onClick={handleLogin} style={{ padding: '10px 20px', fontSize: '16px' }}>登入 Tesla</button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return <div style={{ textAlign: 'center', marginTop: '50px' }}>載入中...</div>;
+  }
 
   const getProgressColor = () => {
     if (data.battery_level > 50) return 'green';
@@ -62,9 +89,12 @@ export default function Home() {
     background: '#ffffff',
   };
 
+  const currentVehicle = vehicles[currentVehicleIndex];
+
   return (
     <div style={cardStyle}>
-      <h2 style={{ marginBottom: '20px' }}>{vehicles[currentVehicleIndex].name}</h2>
+      <h2 style={{ marginBottom: '5px' }}>{currentVehicle.name}</h2>
+      <p style={{ marginBottom: '20px', fontSize: '1em', color: '#555' }}>{currentVehicle.plate}</p>
       <div style={circleStyle}>{data.battery_level}%</div>
       <p>可行駛 {data.battery_range} 公里</p>
       <h2 style={{ color: data.charging_state === 'Charging' ? 'green' : 'gray' }}>
